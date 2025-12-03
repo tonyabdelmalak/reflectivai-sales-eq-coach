@@ -1,0 +1,72 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ApiStatusBanner, ApiStatusBadge } from "@/components/api-status";
+import NotFound from "@/pages/not-found";
+import Dashboard from "@/pages/dashboard";
+import ChatPage from "@/pages/chat";
+import RolePlayPage from "@/pages/roleplay";
+import ModulesPage from "@/pages/modules";
+import FrameworksPage from "@/pages/frameworks";
+import SqlPage from "@/pages/sql";
+import KnowledgePage from "@/pages/knowledge";
+import HeuristicsPage from "@/pages/heuristics";
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/chat" component={ChatPage} />
+      <Route path="/roleplay" component={RolePlayPage} />
+      <Route path="/modules" component={ModulesPage} />
+      <Route path="/frameworks" component={FrameworksPage} />
+      <Route path="/sql" component={SqlPage} />
+      <Route path="/knowledge" component={KnowledgePage} />
+      <Route path="/heuristics" component={HeuristicsPage} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function App() {
+  const style = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <SidebarProvider style={style as React.CSSProperties}>
+            <div className="flex h-screen w-full">
+              <AppSidebar />
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <header className="flex items-center justify-between gap-4 p-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                  <div className="flex items-center gap-3">
+                    <SidebarTrigger data-testid="button-sidebar-toggle" />
+                    <ApiStatusBadge />
+                  </div>
+                  <ThemeToggle />
+                </header>
+                <ApiStatusBanner />
+                <main className="flex-1 overflow-hidden">
+                  <Router />
+                </main>
+              </div>
+            </div>
+          </SidebarProvider>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
