@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 import reflectivAILogo from "@assets/E2ABF40D-E679-443C-A1B7-6681EF25E7E7_1764541714586.png";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import type { Message } from "@shared/schema";
+import { sendChat, Message } from "../lib/agentClient";
+// Removed duplicate Message import; using Message from agentClient.ts
 
 function formatMessageContent(content: string) {
   const lines = content.split('\n');
@@ -67,26 +67,37 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
 
-  const { data: messages = [], isLoading } = useQuery<Message[]>({
-    queryKey: ["/api/chat/messages"],
-  });
+  // Local-only message state, since agentClient.ts is the only gateway
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      const response = await apiRequest("POST", "/api/chat/send", { content });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      setIsLoading(true);
+      const userMessage: Message = {
+        id: `${Date.now()}`,
+        role: "user",
+        content,
+        timestamp: Date.now(),
+      };
+      const newMessages = [...messages, userMessage];
+      setMessages(newMessages);
+      const response = await sendChat(newMessages);
+      const aiMessage: Message = {
+        ...response,
+        id: response.id || `${Date.now()}-ai`,
+        role: "assistant",
+        timestamp: Date.now(),
+      };
+      setMessages([...newMessages, aiMessage]);
+      setIsLoading(false);
+      return aiMessage;
     },
   });
 
   const clearChatMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/chat/clear");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      setMessages([]);
     },
   });
 

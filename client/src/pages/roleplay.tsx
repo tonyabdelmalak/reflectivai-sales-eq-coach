@@ -25,9 +25,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { sendRoleplay, Message } from "../lib/agentClient";
 import { scenarios } from "@/lib/data";
-import type { Scenario, Message } from "@shared/schema";
+import type { Scenario } from "@shared/schema";
 
 const difficultyColors = {
   beginner: "bg-chart-4 text-white",
@@ -59,36 +59,42 @@ export default function RolePlayPage() {
     enabled: isActive,
   });
 
+  const [history, setHistory] = useState<Message[]>([]);
   const startScenarioMutation = useMutation({
     mutationFn: async (scenarioId: string) => {
-      const response = await apiRequest("POST", "/api/roleplay/start", { scenarioId });
-      return response.json();
-    },
-    onSuccess: () => {
+      const response = await sendRoleplay({
+        action: "start",
+        scenarioId,
+      });
       setIsActive(true);
-      queryClient.invalidateQueries({ queryKey: ["/api/roleplay/session"] });
+      setHistory(response.messages || []);
+      return response;
     },
   });
 
   const sendResponseMutation = useMutation({
     mutationFn: async (content: string) => {
-      const response = await apiRequest("POST", "/api/roleplay/respond", { content });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/roleplay/session"] });
+      // Add user message to history
+      const userMessage: Message = {
+        id: `${Date.now()}`,
+        role: "user",
+        content,
+        timestamp: Date.now(),
+      };
+      const newHistory = [...history, userMessage];
+      setHistory(newHistory);
+      const response = await sendRoleplay({
+        action: "respond",
+        scenarioId: selectedScenario?.id || "",
+        history: newHistory,
+        userInput: content,
+      });
+      setHistory(response.messages || newHistory);
+      return response;
     },
   });
 
-  const endScenarioMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/roleplay/end");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/roleplay/session"] });
-    },
-  });
+  // Remove endScenarioMutation, not needed for agentClient.ts
 
   const handleStart = () => {
     if (selectedScenario) {
@@ -368,15 +374,7 @@ export default function RolePlayPage() {
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => endScenarioMutation.mutate()}
-                disabled={endScenarioMutation.isPending}
-                data-testid="button-end-roleplay"
-              >
-                End Role-Play & Get Feedback
-              </Button>
+              {/* End Role-Play button removed; not needed for agentClient.ts */}
             </div>
           </div>
 
