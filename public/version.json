@@ -1,0 +1,20 @@
+{
+  "version": "2026-02-05-04-00-ROLEPLAY-EMERGENCY-FIX",
+  "commit": "a38339c5",
+  "deployment": "CRITICAL: Collapse/Expand + Smart Filtering - Force Deploy",
+  "timestamp": "2026-02-05T04:00:00Z",
+  "fixes": [
+    "CRITICAL: Fixed React Error #300 in roleplay.tsx",
+    "Changed ErrorInfo and ReactNode to type imports",
+    "AI Coach: Removed DISC toggle",
+    "AI Coach: Added PDF export functionality",
+    "AI Coach: Fixed jargon in conversation starters"
+  ],
+  "deployment": {
+    "status": "emergency_cache_bust",
+    "cloudflare_project": "reflectivai-app-prod",
+    "cache_bust": true,
+    "trigger": "force_rebuild_roleplay_fix",
+    "bundle_hash": "FORCE_NEW_BUILD_" + Date.now()
+  }
+}

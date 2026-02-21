@@ -1,0 +1,9 @@
+name = "reflectivai-app-prod"
+compatibility_date = "2024-01-01"
+
+# Cloudflare Pages configuration
+pages_build_output_dir = "dist/client"
+
+# Environment variables
+[vars]
+NODE_VERSION = "18"

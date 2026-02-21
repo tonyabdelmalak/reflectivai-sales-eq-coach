@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Deploy</title></head>
+<body>
+<h1>Testing Deploy API</h1>
+<button onclick="testDeploy()">Test Deploy</button>
+<pre id="result"></pre>
+<script>
+async function testDeploy() {
+  const result = document.getElementById('result');
+  result.textContent = 'Calling API...';
+  try {
+    const response = await fetch('/api/deploy-to-github', { method: 'POST' });
+    const data = await response.json();
+    result.textContent = JSON.stringify(data, null, 2);
+  } catch (error) {
+    result.textContent = 'Error: ' + error.message;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    name: Deploy to Cloudflare Pages
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: |
+          echo "=== Build Output Verification ==="
+          echo "Root dist directory:"
+          ls -lah dist/
+          echo ""
+          echo "Client directory:"
+          ls -lah dist/client/
+          echo ""
+          echo "Client assets:"
+          ls -lah dist/client/assets/
+          echo ""
+          echo "Sample files to deploy:"
+          find dist/client -type f | head -20
+          echo ""
+          echo "Total files:"
+          find dist/client -type f | wc -l
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy to Cloudflare Pages
+        run: |
+          echo "Deploying to Cloudflare Pages..."
+          wrangler pages deploy dist/client \
+            --project-name=reflectivai-app-prod \
+            --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deploy to GitHub</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .container {
+      background: #1e293b;
+      border: 2px solid #14b8a6;
+      border-radius: 12px;
+      padding: 30px;
+    }
+    h1 {
+      color: #14b8a6;
+      margin-top: 0;
+    }
+    button {
+      background: #14b8a6;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #0d9488;
+    }
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+    }
+    .success {
+      background: #064e3b;
+      border: 1px solid #14b8a6;
+      color: #6ee7b7;
+    }
+    .error {
+      background: #7f1d1d;
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+    }
+    .loading {
+      background: #1e3a8a;
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+    }
+    .file-result {
+      margin: 10px 0;
+      padding: 10px;
+      background: #334155;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    .file-success {
+      border-left: 4px solid #14b8a6;
+    }
+    .file-error {
+      border-left: 4px solid #ef4444;
+    }
+    a {
+      color: #14b8a6;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Deploy to GitHub</h1>
+    <p>This will push the following changes to your GitHub repository:</p>
+    <ul>
+      <li><strong>Dashboard UI Improvements</strong> - Navy blue AI Insights cards with teal borders and icons</li>
+      <li><strong>Role Play PDF Export</strong> - Export evaluation results to PDF</li>
+    </ul>
+    <button id="deployBtn" onclick="deploy()">Push Changes to GitHub</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    async function deploy() {
+      const btn = document.getElementById('deployBtn');
+      const status = document.getElementById('status');
+      
+      btn.disabled = true;
+      status.style.display = 'block';
+      status.className = 'loading';
+      status.innerHTML = '⏳ Pushing changes to GitHub...';
+      
+      try {
+        const response = await fetch('/api/deploy-to-github', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          status.className = 'success';
+          let html = `<h3>✅ Successfully deployed ${data.successCount}/${data.total} files!</h3>`;
+          
+          data.results.forEach(result => {
+            if (result.success) {
+              html += `<div class="file-result file-success">✅ ${result.file}<br><small>Commit: ${result.commit.substring(0, 7)}</small></div>`;
+            } else {
+              html += `<div class="file-result file-error">❌ ${result.file}<br><small>${result.error}</small></div>`;
+            }
+          });
+          
+          html += `
+            <p style="margin-top: 20px;">
+              <strong>🚀 GitHub Actions is now deploying your changes!</strong><br>
+              <a href="${data.deploymentUrl}" target="_blank">View deployment status →</a><br>
+              <a href="${data.liveUrl}" target="_blank">View live site →</a>
+            </p>
+            <p><small>⏱️ Deployment usually takes 2-3 minutes</small></p>
+          `;
+          
+          status.innerHTML = html;
+        } else {
+          status.className = 'error';
+          let html = `<h3>❌ Deployment failed (${data.failCount}/${data.total} files failed)</h3>`;
+          
+          data.results.forEach(result => {
+            if (result.success) {
+              html += `<div class="file-result file-success">✅ ${result.file}</div>`;
+            } else {
+              html += `<div class="file-result file-error">❌ ${result.file}<br><small>${result.error}</small></div>`;
+            }
+          });
+          
+          status.innerHTML = html;
+          btn.disabled = false;
+        }
+      } catch (error) {
+        status.className = 'error';
+        status.innerHTML = `<h3>❌ Deployment failed</h3><p>${error.message}</p>`;
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

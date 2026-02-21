@@ -1,0 +1,11 @@
+DEPLOY: Dashboard UI improvements and PDF export
+Timestamp: 2026-02-05T02:10:00Z
+Commit: Product feedback implementation
+
+Changes:
+- Dashboard: Navy blue AI Insights cards with teal borders and icons
+- Roleplay: PDF export functionality in feedback dialog
+
+Files modified:
+- src/pages/dashboard.tsx
+- src/components/roleplay-feedback-dialog.tsx

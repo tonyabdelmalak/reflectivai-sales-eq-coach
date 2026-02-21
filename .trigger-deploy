@@ -1,0 +1,8 @@
+Trigger deployment after adding Cloudflare secrets
+Timestamp: 2026-02-05 18:43:00 UTC
+
+Secrets added:
+- CLOUDFLARE_API_TOKEN: KAvSc8B1t70RN1Ue34NAWYDwdGzQMSIpA8C4W3rq
+- CLOUDFLARE_ACCOUNT_ID: 59fea97fab54fbd4d4168ccaa1fa3410
+
+This commit will trigger the GitHub Actions workflow to deploy to Cloudflare Pages.

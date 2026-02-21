@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "include": ["/*"],
+<<<<<<< HEAD
+  "exclude": []
+=======
+  "exclude": ["/api/*"]
+>>>>>>> phase1-signal-timing-fix
+}
