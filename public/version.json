@@ -1,20 +1,20 @@
 {
-  "version": "2026-02-05-04-00-ROLEPLAY-EMERGENCY-FIX",
-  "commit": "a38339c5",
-  "deployment": "CRITICAL: Collapse/Expand + Smart Filtering - Force Deploy",
-  "timestamp": "2026-02-05T04:00:00Z",
+  "version": "2026-02-21-CRITICAL-FIXES",
+  "commit": "3b5aa8e3",
+  "deployment": "HCP Mood Alignment + Enhanced Cue Descriptions",
+  "timestamp": "2026-02-21T08:30:00Z",
   "fixes": [
-    "CRITICAL: Fixed React Error #300 in roleplay.tsx",
-    "Changed ErrorInfo and ReactNode to type imports",
-    "AI Coach: Removed DISC toggle",
-    "AI Coach: Added PDF export functionality",
-    "AI Coach: Fixed jargon in conversation starters"
+    "CRITICAL: HCP mood alignment - scenarios now use hcpMood and openingScene",
+    "CRITICAL: Enhanced cue descriptions - full 1-2 sentences for 8 behavioral metrics",
+    "Fixed: Opening dialogue now uses scenario-specific openingScene",
+    "Fixed: HCP emotional baseline derived from hcpMood (not description)",
+    "Fixed: All 22 cue descriptions expanded with behavioral context"
   ],
   "deployment": {
-    "status": "emergency_cache_bust",
+    "status": "force_rebuild",
     "cloudflare_project": "reflectivai-app-prod",
     "cache_bust": true,
-    "trigger": "force_rebuild_roleplay_fix",
+    "trigger": "version_json_update",
     "bundle_hash": "FORCE_NEW_BUILD_" + Date.now()
   }
 }
