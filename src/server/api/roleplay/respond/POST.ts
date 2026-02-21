@@ -60,12 +60,16 @@ async function generateHCPDialogue(
     throw new Error('GROQ_API_KEY not configured');
   }
 
+  // Extract hcpMood from scenarioContext (source of truth)
+  const hcpMood = scenarioContext.hcpMood || 'neutral';
+  
   const systemPrompt = `You are an HCP (Healthcare Professional) in a pharmaceutical sales roleplay.
 
 SCENARIO CONTEXT:
 - HCP: ${scenarioContext.stakeholder || 'Healthcare Professional'}
 - Disease State: ${scenarioContext.diseaseState || 'general'}
 - Opening Scene: ${scenarioContext.openingScene || 'N/A'}
+- HCP Mood: ${hcpMood} (maintain this emotional baseline throughout)
 
 CURRENT HCP STATE: ${currentState}
 
@@ -79,9 +83,10 @@ RULES:
 1. Generate ONLY the HCP's next dialogue (no analysis, no JSON)
 2. Stay within ${toneDirective.maxSentences} sentence(s)
 3. Match the tone directive exactly
-4. If boundary=true, include time pressure or constraint language
-5. Natural, realistic medical professional dialogue
-6. NO markdown, NO formatting, ONLY dialogue text
+4. Maintain the HCP's baseline mood (${hcpMood}) in your responses
+5. If boundary=true, include time pressure or constraint language
+6. Natural, realistic medical professional dialogue
+7. NO markdown, NO formatting, ONLY dialogue text
 
 Respond with ONLY the HCP's dialogue.`;
 

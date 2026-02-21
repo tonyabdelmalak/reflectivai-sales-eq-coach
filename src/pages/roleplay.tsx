@@ -714,8 +714,19 @@ function RolePlayPage() {
     mutationFn: async (scenario: Scenario) => {
       const res = await apiRequest("POST", "/api/roleplay/start", {
         scenarioId: (scenario as any).id,
-        scenario,
-        context: { diseaseState: selectedDiseaseState, specialty: selectedSpecialty },
+        scenarioTitle: (scenario as any).title,
+        scenarioDescription: (scenario as any).description,
+        scenarioTags: (scenario as any).tags,
+        hcpMood: (scenario as any).hcpMood,           // ← SOURCE OF TRUTH
+        openingScene: (scenario as any).openingScene, // ← SOURCE OF TRUTH
+        scenarioContext: {
+          stakeholder: (scenario as any).stakeholder,
+          objective: (scenario as any).objective,
+          context: (scenario as any).context,
+          hcpMood: (scenario as any).hcpMood,         // ← Also in context for respond endpoint
+          diseaseState: selectedDiseaseState,
+          specialty: selectedSpecialty,
+        },
       });
       return res.json();
     },
