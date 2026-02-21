@@ -24,9 +24,21 @@ interface AIResponse {
 function evaluateRepMessage(message: string, conversationHistory: any[]): RepEvaluation {
   const lowerMsg = message.toLowerCase();
   
-  // Hostile language detection
-  const hostilePatterns = ['suck', 'terrible', 'useless', 'waste', 'stupid', 'idiot', 'incompetent'];
+  // Hostile language detection (EXPANDED)
+  const hostilePatterns = [
+    'suck', 'terrible', 'useless', 'waste', 'stupid', 'idiot', 'incompetent',
+    'ass', 'asshole', 'mean', 'jerk', 'rude', 'dumb', 'moron', 'fool',
+    'pathetic', 'worthless', 'garbage', 'trash', 'crap', 'bullshit',
+    'shut up', 'shut the hell', 'go to hell', 'screw you', 'fuck'
+  ];
   const isHostile = hostilePatterns.some(p => lowerMsg.includes(p));
+  
+  // Additional hostility signals
+  const hasExcessiveCaps = (message.match(/[A-Z]/g) || []).length / message.length > 0.5;
+  const hasMultipleExclamations = (message.match(/!/g) || []).length >= 2;
+  const hasAggressiveTone = hasExcessiveCaps || hasMultipleExclamations;
+  
+  const finalIsHostile = isHostile || hasAggressiveTone;
   
   // Demand increase detection
   const demandPatterns = ['need', 'must', 'have to', 'require', 'urgent', 'immediately', 'now'];
@@ -37,7 +49,7 @@ function evaluateRepMessage(message: string, conversationHistory: any[]): RepEva
   const acknowledgedConstraint = constraintPatterns.some(p => lowerMsg.includes(p));
   
   return {
-    isHostile,
+    isHostile: finalIsHostile,
     increasedDemand,
     acknowledgedConstraint,
     metricScores: {} // Populated by scoring engine
@@ -174,7 +186,13 @@ export default async function handler(req: Request, res: Response) {
     
     // PHASE 5: Select cues for state (DETERMINISTIC)
     const turnNumber = session.messages.filter(m => m.role === 'assistant').length + 1;
-    const cues = selectCuesForState(newState, sessionId, turnNumber);
+    const previousCueIds = session.messages
+      .filter(m => m.role === 'assistant' && m.metadata?.behavioralCues)
+      .flatMap(m => m.metadata.behavioralCues.map((c: any) => c.id));
+    
+    const cues = selectCuesForState(newState, previousCueIds);
+    
+    console.log(`[ROLEPLAY] Cue selection: state=${newState}, cues=${cues.map(c => c.id).join(', ')}`);
     
     // PHASE 6: Validate cue-state alignment (GOVERNANCE)
     const validation = validateCueStateAlignment(cues, newState);
@@ -219,8 +237,13 @@ export default async function handler(req: Request, res: Response) {
     
     console.log('[ROLEPLAY] Deterministic response sent:', {
       state: newState,
-      cues: cues.map(c => c.type),
-      alignment: alignmentScore
+      cues: cues.map(c => `${c.id} (${c.category})`),
+      alignment: alignmentScore,
+      repEvaluation: {
+        isHostile: repEvaluation.isHostile,
+        increasedDemand: repEvaluation.increasedDemand,
+        acknowledgedConstraint: repEvaluation.acknowledgedConstraint
+      }
     });
     
     return res.json({
